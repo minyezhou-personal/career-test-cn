@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './globals.css';
 
 interface Question {
@@ -86,10 +86,47 @@ const careerPaths = {
 };
 
 export default function Home() {
+  const STORAGE_KEY = 'career_test_cn_state_v1';
+
   const [step, setStep] = useState<'intro' | 'test' | 'result'>('intro');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<{ [key: number]: number }>({});
   const [result, setResult] = useState<string>('');
+  const [scoreBreakdown, setScoreBreakdown] = useState<Record<string, number> | null>(null);
+  const [hasSaved, setHasSaved] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved?.answers && saved?.result) {
+        setAnswers(saved.answers);
+        setResult(saved.result);
+        setScoreBreakdown(saved.scoreBreakdown || null);
+        setStep('result');
+        setHasSaved(true);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const persistResult = (payload: {
+    answers: { [key: number]: number };
+    result: string;
+    scoreBreakdown: Record<string, number>;
+  }) => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ ...payload, savedAt: Date.now() })
+      );
+      setHasSaved(true);
+    } catch {
+      // ignore
+    }
+  };
 
   const handleAnswer = (score: number) => {
     const newAnswers = { ...answers, [questions[currentQuestion].id]: score };
@@ -133,9 +170,11 @@ export default function Home() {
       // 产品技术
       3: { '产品技术': 0.9, '技术管理': 0.5, '教育培训': 0.4 },
       7: { '产品技术': 1.1 },
+      15: { '独立创业': 0.7, '产品技术': 0.6, '学术研究': 0.4, '技术专家': 0.3 },
       16: { '产品技术': 1.0, '技术管理': 0.6 },
       21: { '产品技术': 0.9, '独立创业': 0.6 },
-      22: { '产品技术': 0.8, '技术管理': 0.4, '教育培训': 0.4 },
+      22: { '产品技术': 0.8, '技术管理': 0.4, '教育培训': 0.4, '学术研究': 0.4 },
+      23: { '产品技术': 0.8, '教育培训': 0.7, '技术管理': 0.4 },
       24: { '产品技术': 0.9, '独立创业': 0.6 },
       27: { '产品技术': 0.5, '独立创业': 0.4 },
 
@@ -185,8 +224,12 @@ export default function Home() {
       normalized[k] = denom[k] > 0 ? normalized[k] / denom[k] : 0;
     }
 
-    const topCareer = Object.entries(normalized).reduce((a, b) => (a[1] > b[1] ? a : b))[0];
+    const sorted = Object.entries(normalized).sort((a, b) => b[1] - a[1]);
+    const topCareer = sorted[0]?.[0] || '产品技术';
+
+    setScoreBreakdown(normalized);
     setResult(topCareer);
+    persistResult({ answers: finalAnswers, result: topCareer, scoreBreakdown: normalized });
   };
 
   const restartTest = () => {
@@ -194,6 +237,13 @@ export default function Home() {
     setCurrentQuestion(0);
     setAnswers({});
     setResult('');
+    setScoreBreakdown(null);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    setHasSaved(false);
   };
 
   if (step === 'intro') {
@@ -216,6 +266,12 @@ export default function Home() {
             </ul>
           </div>
 
+          {hasSaved && (
+            <button className="btn-secondary" onClick={() => setStep('result')}>
+              查看上次结果
+            </button>
+          )}
+
           <button className="btn-primary" onClick={() => setStep('test')}>
             开始测评
           </button>
@@ -226,6 +282,12 @@ export default function Home() {
 
   if (step === 'test') {
     const progress = ((currentQuestion + 1) / questions.length) * 100;
+    const qid = questions[currentQuestion].id;
+    const selected = answers[qid];
+
+    const goBack = () => {
+      if (currentQuestion > 0) setCurrentQuestion(currentQuestion - 1);
+    };
     
     return (
       <div className="container">
@@ -240,11 +302,20 @@ export default function Home() {
 
           <h2 className="question-text">{questions[currentQuestion].text}</h2>
 
+          <div className="test-actions">
+            <button className="btn-small" onClick={goBack} disabled={currentQuestion === 0}>
+              上一题
+            </button>
+            <button className="btn-small btn-ghost" onClick={restartTest}>
+              退出
+            </button>
+          </div>
+
           <div className="answer-grid">
             {[1, 2, 3, 4, 5].map((score) => (
               <button
                 key={score}
-                className="answer-btn"
+                className={`answer-btn ${selected === score ? 'active' : ''}`}
                 onClick={() => handleAnswer(score)}
               >
                 <div className="score-circle">{score}</div>
@@ -265,6 +336,12 @@ export default function Home() {
 
   // Result page
   const careerInfo = careerPaths[result as keyof typeof careerPaths];
+
+  const scoresSorted = Object.entries(scoreBreakdown || {})
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => ({ k, v }));
+
+  const top2 = scoresSorted.slice(0, 2).map((x) => x.k);
 
   // 把答题汇总成一些更“报告式”的画像维度（0-100）
   const avg = (ids: number[]) => {
@@ -360,6 +437,42 @@ export default function Home() {
           </div>
 
           <div className="result-section">
+            <h3>🏆 你的 Top 方向</h3>
+            {top2.length > 0 ? (
+              <p className="result-description">
+                你的结果更偏向：<b>{top2[0]}</b>
+                {top2[1] ? (
+                  <>
+                    {' '}（备选方向：<b>{top2[1]}</b>）
+                  </>
+                ) : null}
+              </p>
+            ) : (
+              <p className="muted">未能读取分数明细（不影响主结果）。</p>
+            )}
+          </div>
+
+          <div className="result-section">
+            <h3>📈 分数明细（归一化）</h3>
+            {scoresSorted.length > 0 ? (
+              <div className="score-list">
+                {scoresSorted.map((s) => (
+                  <div key={s.k} className="score-row">
+                    <div className="score-label2">{s.k}</div>
+                    <div className="score-bar">
+                      <div className="score-fill" style={{ width: `${Math.round(s.v * 20)}%` }} />
+                    </div>
+                    <div className="score-val">{s.v.toFixed(2)}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="muted">暂无分数明细。</p>
+            )}
+            <p className="muted">说明：分数已做归一化，用于对比不同方向的相对匹配程度。</p>
+          </div>
+
+          <div className="result-section">
             <h3>🧭 你的职业画像（综合倾向）</h3>
             <div className="traits">
               <div className="trait-row">
@@ -437,11 +550,6 @@ export default function Home() {
             </ul>
           </div>
 
-          <div className="result-section cta">
-            <h3>📩 获取你的专属链接</h3>
-            <p>如果你想把结果做成更详细的“可执行版本”（岗位清单/简历关键词/7天行动清单），可以联系我获取专属链接与升级版报告。</p>
-            <button className="btn-cta">联系我获取链接</button>
-          </div>
         </div>
 
         <button className="btn-secondary" onClick={restartTest}>

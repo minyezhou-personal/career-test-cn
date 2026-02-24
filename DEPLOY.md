@@ -72,20 +72,10 @@ vercel --prod
 
 ## 💡 小红书引流设置
 
-1. **获取短链接**
-   - 使用 bitly.com 或 短链服务
-   - 将 Vercel 域名转为短链
-
-2. **制作二维码**
-```bash
-# 在线生成二维码
-https://www.qrcode-monkey.com/
-```
-
-3. **小红书简介**
+1. **简介示例**
 ```
 🎯 专业职业测评 | 找到最适合你的方向
-⬇️ 点击链接免费测评
+现在就去体验测评
 ```
 
 ## ⚡ 性能优化建议
@@ -102,17 +92,6 @@ https://www.qrcode-monkey.com/
 1. Environment Variables → 添加敏感配置
 2. 设置 CORS 策略
 3. 配置 Rate Limiting（防止滥用）
-
-## 📱 集成微信支付（进阶）
-
-如果需要添加付费功能：
-
-1. 申请微信支付商户号
-2. 在 Vercel 添加环境变量：
-   - `WECHAT_PAY_APPID`
-   - `WECHAT_PAY_MCH_ID`
-   - `WECHAT_PAY_KEY`
-3. 参考微信支付文档集成
 
 ## 🎨 自定义品牌
 
@@ -154,6 +133,5 @@ A: 可以，推荐使用 Vercel Postgres 或 PlanetScale。
 - 在小红书发布引流内容
 - 收集用户反馈
 - 持续优化测评算法
-- 考虑商业化变现
 
 祝你在小红书售卖成功！💰
