@@ -45,6 +45,11 @@ const questions: Question[] = [
   { id: 28, text: '我更愿意成为某个领域的专家，而不是做很多杂事', category: '价值观' },
   { id: 29, text: '我希望未来能拥有更高的自主权（时间/地点/选择）', category: '价值观' },
   { id: 30, text: '我能接受压力与竞争，并愿意为目标持续投入', category: '价值观' },
+
+  // 学术研究倾向（更好地区分“技术专家” vs “读博科研”）
+  { id: 31, text: '我喜欢阅读论文/文献，并从中找到值得继续追的问题', category: '研究倾向' },
+  { id: 32, text: '相比快速出结果，我更享受设计严谨的方法并反复验证', category: '研究倾向' },
+  { id: 33, text: '我愿意花时间把研究过程写成论文/报告，并持续迭代表达', category: '研究倾向' },
 ];
 
 const careerPaths = {
@@ -135,8 +140,9 @@ export default function Home() {
       27: { '产品技术': 0.5, '独立创业': 0.4 },
 
       // 学术研究（偏读博/科研）
-      // 注：研究倾向主要体现在 6/10/17/28 等题里（已在上方合并到这些题的权重中），
-      // 避免重复 key 导致权重覆盖。
+      31: { '学术研究': 1.3 },
+      32: { '学术研究': 1.2, '技术专家': 0.4 },
+      33: { '学术研究': 1.2, '教育培训': 0.3 },
 
       // 独立创业
       9: { '独立创业': 1.2 },
@@ -200,13 +206,13 @@ export default function Home() {
           <div className="intro-content">
             <h2>测评说明</h2>
             <p className="intro-explain">
-              本测评用于帮助大四/研究生在毕业季快速梳理你的能力、兴趣与价值观，并给出更适合的求职方向建议。请按第一反应作答，结果仅供参考；如果你正在纠结读博、进企业或转行，它也能提供一个清晰的起点。
+              本测评用于帮助你快速梳理能力、兴趣与价值观，并给出更适合的求职方向建议。请按第一反应作答，结果仅供参考；无论你是应届求职、读研阶段找方向，还是在职转行，都可以把它当成一个清晰的起点。
             </p>
             <ul>
-              <li>本测评包含 30 道题目</li>
+              <li>本测评包含 33 道题目</li>
               <li>请根据真实感受选择 1-5 分（非常不同意到非常同意）</li>
               <li>测评结果将为你推荐最适合的职业发展路径</li>
-              <li>预计用时：8-10 分钟</li>
+              <li>预计用时：10-12 分钟</li>
             </ul>
           </div>
 
@@ -276,6 +282,7 @@ export default function Home() {
     businessSense: Math.round((avg([7, 9, 12, 24]) / 5) * 100),
     creativity: Math.round((avg([16, 18, 15, 20]) / 5) * 100),
     stability: Math.round((avg([11, 14]) / 5) * 100),
+    research: Math.round((avg([6, 10, 17, 31, 32, 33]) / 5) * 100),
   };
 
   const reportTemplates: Record<string, {
@@ -384,6 +391,11 @@ export default function Home() {
                 <div className="trait-label">稳定偏好</div>
                 <div className="trait-bar"><div className="trait-fill" style={{ width: `${profile.stability}%` }} /></div>
                 <div className="trait-val">{profile.stability}</div>
+              </div>
+              <div className="trait-row">
+                <div className="trait-label">研究倾向</div>
+                <div className="trait-bar"><div className="trait-fill" style={{ width: `${profile.research}%` }} /></div>
+                <div className="trait-val">{profile.research}</div>
               </div>
             </div>
             <p className="muted">说明：画像为综合倾向（0-100），用于帮助你更直观理解自己的工作偏好。</p>
