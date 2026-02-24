@@ -241,44 +241,60 @@ h3 {
   margin-top: 15px;
 }
 
-.signals {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.signal-item {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 14px 16px;
-}
-
-.signal-title {
-  color: #2d3748;
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.signal-body {
-  color: #4a5568;
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-.signal-fit {
-  color: #667eea;
-  font-size: 14px;
-  margin-top: 6px;
-  font-weight: 600;
-}
-
 .muted {
   color: #718096;
   font-size: 14px;
   line-height: 1.7;
+}
+
+.traits {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.trait-row {
+  display: grid;
+  grid-template-columns: 92px 1fr 42px;
+  gap: 10px;
+  align-items: center;
+}
+
+.trait-label {
+  color: #2d3748;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.trait-bar {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.trait-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.trait-val {
+  text-align: right;
+  color: #4a5568;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.report-list {
+  margin-left: 18px;
+  color: #4a5568;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.report-list li {
+  margin: 8px 0;
 }
 
 .skill-item {

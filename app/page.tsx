@@ -233,52 +233,75 @@ export default function Home() {
   // Result page
   const careerInfo = careerPaths[result as keyof typeof careerPaths];
 
-  const questionInsight: Record<number, { trait: string; why: string; fit: string[] }> = {
-    1: { trait: '技术攻坚型', why: '你对复杂问题的拆解与解决更有信心', fit: ['技术专家', '产品技术'] },
-    2: { trait: '持续学习型', why: '你愿意快速上手新工具并持续迭代能力', fit: ['技术专家', '独立创业', '产品技术'] },
-    3: { trait: '表达与协作型', why: '你能把抽象概念讲清楚，推动共识与落地', fit: ['技术管理', '产品技术', '教育培训'] },
-    4: { trait: '带队推进型', why: '你更愿意承担责任、协调资源并推动项目完成', fit: ['技术管理'] },
-    5: { trait: '规划组织型', why: '你擅长把事情排优先级并有条理地推进', fit: ['技术管理', '产品技术'] },
-    6: { trait: '前沿探索型', why: '你更容易被新技术、新方向与研究问题吸引', fit: ['技术专家'] },
-    7: { trait: '需求洞察型', why: '你愿意走进真实场景，理解客户/用户需要什么', fit: ['产品技术'] },
-    8: { trait: '知识传递型', why: '你享受把经验讲给别人听并帮助对方成长', fit: ['教育培训', '技术管理'] },
-    9: { trait: '商业与机会敏感型', why: '你对从 0 到 1、商业模式和增长更感兴趣', fit: ['独立创业', '产品技术'] },
-    10: { trait: '深度专注型', why: '你更喜欢独立深挖与长期积累，而不是频繁切换', fit: ['技术专家'] },
-    11: { trait: '平衡导向型', why: '你更重视稳定节奏与可持续的生活方式', fit: ['产品技术', '教育培训'] },
-    12: { trait: '回报驱动型', why: '你对收入/回报更敏感，会关注成长与收益', fit: ['独立创业', '技术管理'] },
-    13: { trait: '影响力导向型', why: '你希望做的事能产生更大的社会价值', fit: ['教育培训', '产品技术'] },
-    14: { trait: '稳定安全型', why: '你更看重确定性与风险可控', fit: ['教育培训', '技术管理'] },
-    15: { trait: '创新驱动型', why: '你更愿意尝试新方法并在变化中创造结果', fit: ['独立创业', '产品技术'] },
-
-    16: { trait: '结构化思考型', why: '你擅长把不清晰的问题拆成路径和优先级', fit: ['产品技术', '技术管理'] },
-    17: { trait: '证据导向型', why: '你更愿意用数据/事实支撑判断，减少拍脑袋', fit: ['技术专家', '产品技术'] },
-    18: { trait: '创造与搭建型', why: '你更享受从 0 到 1 的搭建与试错过程', fit: ['独立创业', '产品技术'] },
-    19: { trait: '推动落地型', why: '你能在多方拉扯中推进共识与执行', fit: ['技术管理', '产品技术'] },
-    20: { trait: '高适应型', why: '你能在不确定环境下快速调整策略与节奏', fit: ['独立创业', '技术管理'] },
-
-    21: { trait: '影响与说服型', why: '你愿意把方案讲清楚并推动别人接受', fit: ['产品技术', '独立创业'] },
-    22: { trait: '文档输出型', why: '你能把复杂信息写清楚，这在职场非常稀缺', fit: ['产品技术', '技术管理', '教育培训'] },
-    23: { trait: '人际互动型', why: '你更从人际互动获得能量，适合更高沟通密度的岗位', fit: ['产品技术', '教育培训'] },
-    24: { trait: '增长敏感型', why: '你对转化/运营指标有兴趣，更容易做出可量化的成果', fit: ['产品技术', '独立创业'] },
-    25: { trait: '流程优化型', why: '你擅长把混乱变成流程，提高团队效率', fit: ['技术管理', '产品技术'] },
-
-    26: { trait: '成长优先型', why: '你更愿意把“成长速度”放在第一位', fit: ['独立创业', '产品技术'] },
-    27: { trait: '结果反馈型', why: '你更喜欢短周期看到结果与反馈', fit: ['产品技术', '独立创业'] },
-    28: { trait: '专家路线偏好', why: '你更愿意在一个方向深挖，形成不可替代性', fit: ['技术专家'] },
-    29: { trait: '高自主需求', why: '你更看重自主权与自由度，适合更自主的路径', fit: ['独立创业'] },
-    30: { trait: '抗压竞争型', why: '你能承受压力并持续投入，适合高目标导向的环境', fit: ['技术管理', '独立创业'] },
+  // 把答题汇总成一些更“报告式”的画像维度（0-100）
+  const avg = (ids: number[]) => {
+    const vals = ids
+      .map((id) => answers[id])
+      .filter((v) => typeof v === 'number') as number[];
+    if (vals.length === 0) return 0;
+    return vals.reduce((a, b) => a + b, 0) / vals.length;
   };
 
-  const topSignals = Object.entries(answers)
-    .map(([qid, score]) => ({ qid: Number(qid), score }))
-    .filter((x) => x.score >= 4)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
-    .map(({ qid, score }) => {
-      const q = questions.find((qq) => qq.id === qid);
-      const meta = questionInsight[qid];
-      return { qid, score, text: q?.text || '', meta };
-    });
+  const profile = {
+    techDepth: Math.round((avg([1, 2, 10, 17, 28]) / 5) * 100),
+    leadership: Math.round((avg([4, 5, 19, 25]) / 5) * 100),
+    communication: Math.round((avg([3, 21, 22, 23]) / 5) * 100),
+    businessSense: Math.round((avg([7, 9, 12, 24]) / 5) * 100),
+    creativity: Math.round((avg([16, 18, 15, 20]) / 5) * 100),
+    stability: Math.round((avg([11, 14]) / 5) * 100),
+  };
+
+  const reportTemplates: Record<string, {
+    core: string;
+    strengths: string[];
+    strongFit: string[];
+    nextFit: string[];
+    risk: string[];
+    nextSteps: string[];
+  }> = {
+    '技术专家': {
+      core: '你更适合走“深度积累 → 解决难题 → 成为领域专家”的路径。你的优势在于对复杂问题的专注与拆解能力，越是在需要硬实力与持续迭代的岗位，你越容易拉开差距。',
+      strengths: ['深度学习与技术迭代能力强', '能在复杂问题上持续投入并产出结果', '更适合用作品/项目证明实力'],
+      strongFit: ['后端/客户端/全栈工程师', '数据/算法/平台工程', '架构/性能优化/基础设施方向'],
+      nextFit: ['技术产品/解决方案（偏技术）', '研究/实验/原型验证类岗位'],
+      risk: ['如果岗位长期以沟通拉扯、开会对齐为主，可能会让你消耗感更强', '如果没有清晰的技术成长路径，你会更容易觉得“在原地打转”'],
+      nextSteps: ['把简历重心放在“难题/指标/规模”上（性能、稳定性、成本、效率）', '准备 1-2 个可讲清楚的项目故事：背景-挑战-方案-结果', '投递优先选：有技术梯队/代码评审/明确晋升标准的团队'],
+    },
+    '技术管理': {
+      core: '你更适合走“带队推进 → 协调资源 → 对结果负责”的路径。你不是只想把事情做完，更在意把团队的节奏、协作与交付打顺，属于能把复杂项目推动落地的人。',
+      strengths: ['能组织规划、拆解目标并推动执行', '在多方协作中更容易建立共识', '对流程与效率有敏感度'],
+      strongFit: ['技术组长/Team Lead（成长型）', '工程项目管理/研发效能', '技术管理储备（校招可从核心开发做起）'],
+      nextFit: ['产品技术/解决方案（需要跨团队推进）', '教育培训/带教方向（偏管理）'],
+      risk: ['如果你缺少“硬核拿得出手的项目”，管理潜力会很难被面试官认可', '在权责不清的团队里容易背锅或被消耗'],
+      nextSteps: ['用经历证明“你推动过什么结果”：进度、质量、协作、风险控制', '准备 2 个“冲突与协调”的案例（如何对齐目标、做取舍）', '早期岗位建议：核心开发/项目owner，再逐步承担带队职责'],
+    },
+    '产品技术': {
+      core: '你更适合走“理解需求 → 设计方案 → 推动落地”的路径。你擅长在技术与业务之间翻译，把复杂问题变成可交付的产品/方案，并用沟通与结构化思考拿结果。',
+      strengths: ['结构化思考强：能把问题拆成路径与优先级', '沟通表达与文档输出能力更占优势', '对用户/业务需求更敏感'],
+      strongFit: ['产品经理（偏策略/需求）', '解决方案架构师/售前（偏方案）', '数据分析/运营分析（偏业务）'],
+      nextFit: ['技术管理（更偏推进）', '独立创业（偏产品/增长）'],
+      risk: ['如果只停留在“会说会写”，缺少可量化成果，会被认为偏虚', '在业务目标不清的团队里，容易反复改需求导致内耗'],
+      nextSteps: ['准备 1 份“需求-方案-落地-结果”的完整案例（最好有数据）', '简历关键词：增长、转化、留存、效率、成本、体验、闭环', '投递优先选：业务目标清晰、能给你闭环机会的团队'],
+    },
+    '独立创业': {
+      core: '你更适合走“高自主权 + 高不确定性”的路径。你对机会、回报与从 0 到 1 的过程更有热情，愿意承担风险并快速试错，用结果说话。',
+      strengths: ['自驱力强，愿意持续投入到目标上', '对商业机会/增长更敏感', '适应性强，能在变化中快速调整'],
+      strongFit: ['创业/合伙/小团队多面手', '增长/运营/商业化方向', '独立开发者/自由职业（有技能闭环）'],
+      nextFit: ['产品技术（偏增长/商业）', '技术专家（做硬能力底盘）'],
+      risk: ['如果缺少稳定现金流或硬技能底盘，焦虑会被放大', '过早追求“全都要”，可能导致方向分散、难以积累护城河'],
+      nextSteps: ['先确定一个可变现的“硬技能”作为底盘（开发/数据/设计/内容）', '用最小成本做 1 个小项目验证：需求-交付-收费-复购', '给自己设定 30 天目标：产出作品/客户/收入中的任意一个'],
+    },
+    '教育培训': {
+      core: '你更适合走“知识体系化 → 讲清楚 → 带人成长”的路径。你能把复杂内容组织成易懂的表达，并在陪伴他人成长中获得成就感。',
+      strengths: ['表达清晰，善于把知识结构化', '耐心与同理心更强，适合带教与辅导', '价值观更偏稳定与长期积累'],
+      strongFit: ['培训师/讲师/教研', '企业内训/知识管理', '高校/机构/内容型教育方向'],
+      nextFit: ['技术管理（偏带教）', '产品技术（偏内容/运营/用户增长）'],
+      risk: ['如果过度追求完美而缺少结果导向，可能难以快速建立影响力', '如果平台/团队不给你舞台，你会觉得“输出无处可用”'],
+      nextSteps: ['准备一套可展示的“课程/分享”作品（PPT/文章/视频）', '简历强调：讲课次数、学员反馈、课程转化/完课率等指标', '优先选择：有教研体系/明确培养机制的平台或团队'],
+    },
+  };
+
+  const tpl = reportTemplates[result] || reportTemplates['产品技术'];
   
   return (
     <div className="container">
@@ -290,61 +313,87 @@ export default function Home() {
 
         <div className="result-content">
           <div className="result-section">
-            <h3>📊 评估结果</h3>
-            <p className="result-description">{careerInfo.description}</p>
+            <h3>📌 核心结论</h3>
+            <p className="result-description">{tpl.core}</p>
           </div>
 
           <div className="result-section">
-            <h3>🔍 关键依据（你为什么会是这个结果）</h3>
-            {topSignals.length > 0 ? (
-              <div className="signals">
-                {topSignals.map((s) => (
-                  <div key={s.qid} className="signal-item">
-                    <div className="signal-title">
-                      你在「{s.text}」选择了 {s.score} 分
-                    </div>
-                    <div className="signal-body">
-                      体现出你更偏 <b>{s.meta?.trait || '某类偏好'}</b>：{s.meta?.why || '这会影响你的岗位适配。'}
-                    </div>
-                    {s.meta?.fit?.includes(result) ? (
-                      <div className="signal-fit">因此更匹配当前推荐的「{result}」路径。</div>
-                    ) : (
-                      <div className="signal-fit">这也是你可能同时适配的方向：{s.meta?.fit?.join(' / ')}</div>
-                    )}
-                  </div>
-                ))}
+            <h3>🧭 你的职业画像（综合倾向）</h3>
+            <div className="traits">
+              <div className="trait-row">
+                <div className="trait-label">技术深度</div>
+                <div className="trait-bar"><div className="trait-fill" style={{ width: `${profile.techDepth}%` }} /></div>
+                <div className="trait-val">{profile.techDepth}</div>
               </div>
-            ) : (
-              <p className="muted">
-                你本次选择较为中性（3 分偏多）。如果想要更明确的结果，建议按第一反应作答，或在更有把握时再测一次。
-              </p>
-            )}
+              <div className="trait-row">
+                <div className="trait-label">领导与推进</div>
+                <div className="trait-bar"><div className="trait-fill" style={{ width: `${profile.leadership}%` }} /></div>
+                <div className="trait-val">{profile.leadership}</div>
+              </div>
+              <div className="trait-row">
+                <div className="trait-label">沟通表达</div>
+                <div className="trait-bar"><div className="trait-fill" style={{ width: `${profile.communication}%` }} /></div>
+                <div className="trait-val">{profile.communication}</div>
+              </div>
+              <div className="trait-row">
+                <div className="trait-label">商业敏感</div>
+                <div className="trait-bar"><div className="trait-fill" style={{ width: `${profile.businessSense}%` }} /></div>
+                <div className="trait-val">{profile.businessSense}</div>
+              </div>
+              <div className="trait-row">
+                <div className="trait-label">创新/适应</div>
+                <div className="trait-bar"><div className="trait-fill" style={{ width: `${profile.creativity}%` }} /></div>
+                <div className="trait-val">{profile.creativity}</div>
+              </div>
+              <div className="trait-row">
+                <div className="trait-label">稳定偏好</div>
+                <div className="trait-bar"><div className="trait-fill" style={{ width: `${profile.stability}%` }} /></div>
+                <div className="trait-val">{profile.stability}</div>
+              </div>
+            </div>
+            <p className="muted">说明：画像为综合倾向（0-100），用于帮助你更直观理解自己的工作偏好。</p>
           </div>
 
           <div className="result-section">
-            <h3>💼 推荐职位</h3>
-            <div className="career-tags">
-              {careerInfo.careers.map((career, index) => (
-                <span key={index} className="career-tag">{career}</span>
+            <h3>✅ 你更容易做出成绩的方向</h3>
+            <ul className="report-list">
+              {tpl.strongFit.map((x, i) => (
+                <li key={i}>{x}</li>
               ))}
-            </div>
+            </ul>
           </div>
 
           <div className="result-section">
-            <h3>🎯 核心技能</h3>
-            <div className="skills-list">
-              {careerInfo.skills.map((skill, index) => (
-                <div key={index} className="skill-item">
-                  <span className="skill-bullet">•</span> {skill}
-                </div>
+            <h3>🟨 次适配（满足条件也会很合适）</h3>
+            <ul className="report-list">
+              {tpl.nextFit.map((x, i) => (
+                <li key={i}>{x}</li>
               ))}
-            </div>
+            </ul>
+          </div>
+
+          <div className="result-section">
+            <h3>⚠️ 风险提醒（避坑建议）</h3>
+            <ul className="report-list">
+              {tpl.risk.map((x, i) => (
+                <li key={i}>{x}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="result-section">
+            <h3>🚀 下一步建议（更落地）</h3>
+            <ul className="report-list">
+              {tpl.nextSteps.map((x, i) => (
+                <li key={i}>{x}</li>
+              ))}
+            </ul>
           </div>
 
           <div className="result-section cta">
-            <h3>🚀 下一步行动</h3>
-            <p>想要获得详细的职业发展规划和个性化指导？</p>
-            <button className="btn-cta">联系我获取完整报告</button>
+            <h3>📩 获取你的专属链接</h3>
+            <p>如果你想把结果做成更详细的“可执行版本”（岗位清单/简历关键词/7天行动清单），可以联系我获取专属链接与升级版报告。</p>
+            <button className="btn-cta">联系我获取链接</button>
           </div>
         </div>
 
