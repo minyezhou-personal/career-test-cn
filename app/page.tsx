@@ -128,6 +128,9 @@ export default function Home() {
           
           <div className="intro-content">
             <h2>测评说明</h2>
+            <p className="intro-explain">
+              本测评用于帮助大四/研究生在毕业季快速梳理你的能力、兴趣与价值观，并给出更适合的求职方向建议。请按第一反应作答，结果仅供参考；如果你正在纠结读博、进企业或转行，它也能提供一个清晰的起点。
+            </p>
             <ul>
               <li>本测评包含 15 道题目</li>
               <li>请根据真实感受选择 1-5 分（非常不同意到非常同意）</li>
