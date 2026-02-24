@@ -143,16 +143,32 @@ export default function Home() {
       11: { '教育培训': 0.6 },
     };
 
+    const denom: Record<string, number> = {
+      '技术专家': 0,
+      '技术管理': 0,
+      '产品技术': 0,
+      '独立创业': 0,
+      '教育培训': 0,
+    };
+
     for (const [qidStr, score] of Object.entries(finalAnswers)) {
       const qid = Number(qidStr);
       const w = weights[qid];
       if (!w) continue;
       for (const [path, weight] of Object.entries(w)) {
-        scores[path] += score * (weight || 0);
+        const ww = weight || 0;
+        scores[path] += score * ww;
+        denom[path] += ww;
       }
     }
 
-    const topCareer = Object.entries(scores).reduce((a, b) => (a[1] > b[1] ? a : b))[0];
+    // 归一化：避免“某个方向权重题更多”导致结果永远偏向它
+    const normalized: Record<string, number> = { ...scores };
+    for (const k of Object.keys(normalized)) {
+      normalized[k] = denom[k] > 0 ? normalized[k] / denom[k] : 0;
+    }
+
+    const topCareer = Object.entries(normalized).reduce((a, b) => (a[1] > b[1] ? a : b))[0];
     setResult(topCareer);
   };
 
